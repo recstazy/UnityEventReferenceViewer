@@ -8,5 +8,4 @@ Simple to use:
 * Also shows generic UnityEvent<T> references
 * You can search for method or script name in searchfield (not case sensitive)
 
-Here's the demo:
 [![](http://img.youtube.com/vi/cGik_KPcx54/0.jpg)](http://www.youtube.com/watch?v=cGik_KPcx54 "SeeDemo")
