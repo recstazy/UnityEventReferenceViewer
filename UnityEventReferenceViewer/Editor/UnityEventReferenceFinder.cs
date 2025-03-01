@@ -32,7 +32,7 @@ namespace UnityEventReferenceViewer
         public static List<EventReferenceInfo> FindAllUnityEventsReferences()
         {
             var behaviours = Resources.FindObjectsOfTypeAll<MonoBehaviour>();
-            var events = new Dictionary<MonoBehaviour, UnityEventBase>();
+            var events = new Dictionary<MonoBehaviour, List<UnityEventBase>>();
 
             foreach (var b in behaviours)
             {
@@ -40,7 +40,14 @@ namespace UnityEventReferenceViewer
                 var evnts = info.DeclaredFields.Where(f => f.FieldType.IsSubclassOf(typeof(UnityEventBase))).ToList();
                 foreach (var e in evnts)
                 {
-                    events.Add(b, e.GetValue(b) as UnityEventBase);
+                    var unityEvent = e.GetValue(b) as UnityEventBase;
+
+                    if (!events.ContainsKey(b))
+                    {
+                        events[b] = new List<UnityEventBase>();
+                    }
+
+                    events[b].Add(unityEvent);
                 }
             }
 
@@ -48,20 +55,23 @@ namespace UnityEventReferenceViewer
 
             foreach (var e in events)
             {
-                int count = e.Value.GetPersistentEventCount();
-                var info = new EventReferenceInfo();
-                info.Owner = e.Key;
-
-                for (int i = 0; i < count; i++)
+                foreach (var unityEvent in e.Value)
                 {
-                    var obj = e.Value.GetPersistentTarget(i);
-                    var method = e.Value.GetPersistentMethodName(i);
+                    int count = unityEvent.GetPersistentEventCount();
+                    var info = new EventReferenceInfo();
+                    info.Owner = e.Key;
 
-                    info.Listeners.Add(obj as MonoBehaviour);
-                    info.MethodNames.Add(obj.GetType().Name.ToString() + "." + method);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var obj = unityEvent.GetPersistentTarget(i);
+                        var method = unityEvent.GetPersistentMethodName(i);
+
+                        info.Listeners.Add(obj as MonoBehaviour);
+                        info.MethodNames.Add(obj.GetType().Name.ToString() + "." + method);
+                    }
+
+                    infos.Add(info);
                 }
-
-                infos.Add(info);
             }
 
             return infos;
